@@ -18,6 +18,8 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
 1. Clone the repository. enter the directory and initialize the submodules
   ```bash
   git clone https://github.ncsu.edu/atmughra/ECE-506-406-Projects.git
+  UnityID:
+  PASSWord:
   cd ECE-506-406-Projects
   ```
 
@@ -29,7 +31,7 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
 ### Initial setup
 1. After cloning the repository. enter the directory
   ```bash
-  cd Project-1/code
+  cd 01_Project-1/code
   ```
 2. compile the code
   ```bash
