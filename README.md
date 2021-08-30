@@ -29,7 +29,7 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
 ### Initial setup
 1. After cloning the repository. enter the directory
   ```bash
-  cd code
+  cd Project-1/code
   ```
 2. compile the code
   ```bash
