@@ -14,6 +14,32 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
 * For now this repository is for FALL 2021 Class any future updates are the responsibility of future TAs if they want to use it.
 * This framework developed on Ubuntu-Linux. It is your responsibility to make it work on windows or other systems, though it will run on any Linux machine that has a terminal.
 
+### Initial setup
+1. Clone the repository. enter the directory and initialize the submodules
+  ```bash
+  git clone https://github.ncsu.edu/atmughra/ECE-506-492-Projects.git
+  cd ECE-506-406-Projects
+  ```
+
+## Project 1
+### Benchmark format
+* Edge lists are provided in textual format and they are formatted as source → destination separated by a tab.
+*Src*  →  *Dest*
+
+### Initial setup
+1. After cloning the repository. enter the directory
+  ```bash
+  cd code
+  ```
+2. compile the code
+  ```bash
+  make
+  ```
+3. run the code
+  ```bash
+  make run
+  ```
+
 ## Organization
 * `00_Architecture_of_Parallel_Computers`
   * `00_ARC_HPC_Guide` - How to setup ARC/HPC NCSU for future Projects/MachineProblems(MPs).
@@ -48,12 +74,3 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
     * `Makefile` - a file that compiles the base code
   * `doc` - Documents describes the Machine Problem
 
-
-### Initial setup
-1. Clone the repository. enter the directory and initialize the submodules
-  ```bash
-  git clone https://github.ncsu.edu/atmughra/ECE-506-492-Projects.git
-  cd ECE-506-406-Projects
-  ```
-
-### Project 1
