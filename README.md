@@ -17,7 +17,7 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
 ### Initial setup
 1. Clone the repository. enter the directory and initialize the submodules
   ```bash
-  git clone https://github.ncsu.edu/atmughra/ECE-506-492-Projects.git
+  git clone https://github.ncsu.edu/atmughra/ECE-506-406-Projects.git
   cd ECE-506-406-Projects
   ```
 
