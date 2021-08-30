@@ -10,6 +10,7 @@ BIN_DIR				= bin
 
 # compilers
 CC				  = gcc
+# CC				  = mpicc
 
 INC = 	-I$(APP_DIR)/$(INC_DIR)/
 		
