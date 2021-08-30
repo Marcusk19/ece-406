@@ -21,7 +21,7 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
   * `02_Slides` - Slides from chapter 1-12 from the old book 2009.
   * `03_papers` - Extra reading material and papers (optional).
   * `04_Fall_2018` - Updated slides and notes for the semester the class being taught.
-* `Project-1` - Machine Problem 2
+* `Project-1` - Project 1
   * `code` - base code for the problem
     * `bin`- binaries are generated in this folder
     * `datasets` - sample data sets for the code
@@ -55,3 +55,5 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
   git clone https://github.ncsu.edu/atmughra/ECE-506-492-Projects.git
   cd ECE-506-406-Projects
   ```
+
+### Project 1
