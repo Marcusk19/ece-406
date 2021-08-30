@@ -25,11 +25,10 @@ void printMessageWithtime(const char * msg, double time){
 }
 
 static void usage(void) {
-  printf("\nUsage: ./main -f <graph file> -r [root] -n [num threads] -p [0-push/1-pull]\n");
+  printf("\nUsage: ./main -f <graph file> -r [root] -n [num threads]\n");
   printf("\t-f <graph file.txt>\n");
   printf("\t-h [help]\n");
   printf("\t-r [root/source]: BFS \n");
-  printf("\t-p [algorithm direction] [0-1]-push/pull\n");
   printf("\t-n [num threads] default:max number of threads the system has\n");
   // _exit(-1);
 }
@@ -51,7 +50,7 @@ int main(int argc, char **argv) {
   int c;
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "f:p:r:n:h")) != -1){
+  while ((c = getopt (argc, argv, "f:r:n:h")) != -1){
     switch (c)
       {
       case 'h':
