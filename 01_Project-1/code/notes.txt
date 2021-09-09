@@ -1,0 +1,1 @@
+scp mskok@login.hpc.ncsu.edu:/home/mskok/program2.tgz /home/marcus/Documents/Projects/program2/program2.tgz 
