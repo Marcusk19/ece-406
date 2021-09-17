@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
     printf(" -----------------------------------------------------\n");
     Start(timer);
     graph = countSortEdgesBySource(graph); // you need to parallelize this function
-    // graph = radixSortEdgesBySource(graph); // you need to parallelize this function
+    // graph = radixSortEdgesBySourceOpenMP(graph); // you need to parallelize this function
     Stop(timer);
     printMessageWithtime("Time Sorting (Seconds)",Seconds(timer));
 

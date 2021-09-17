@@ -7,9 +7,11 @@
 #include "sort.h"
 #include "graph.h"
 
-struct Graph* countSortEdgesBySource (struct Graph* graph){
 
-    int i;
+struct Graph* countSortEdgesBySource (struct Graph* graph){
+    //printf("--Parallized Count Sort-- \n");
+
+    int i = 0;
     int key;
     int pos;
     struct Edge *sorted_edges_array = newEdgeArray(graph->num_edges);
@@ -17,21 +19,29 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     // auxiliary arrays, allocated at the start up of the program
     int *vertex_count = (int*)malloc(graph->num_vertices*sizeof(int)); // needed for Counting Sort
 
-    for(i = 0; i < graph->num_vertices; ++i) {
+    omp_set_num_threads(4);
+    #pragma omp parallel for shared(vertex_count,i)
+    for(i=0; i < graph->num_vertices; ++i) {
         vertex_count[i] = 0;
     }
 
     // count occurrence of key: id of a source vertex
+    omp_set_num_threads(4);
+    #pragma omp parallel for shared(vertex_count,key,sorted_edges_array,i)
     for(i = 0; i < graph->num_edges; ++i) {
         key = graph->sorted_edges_array[i].src;
         vertex_count[key]++;
     }
 
+    #pragma omp barrier
+    #pragma omp parallel for shared(vertex_count,i)
     // transform to cumulative sum
     for(i = 1; i < graph->num_vertices; ++i) {
         vertex_count[i] += vertex_count[i - 1];
     }
 
+    omp_set_num_threads(4);
+    #pragma omp parallel for shared(vertex_count,key,pos,sorted_edges_array,i)
     // fill-in the sorted array of edges
     for(i = graph->num_edges - 1; i >= 0; --i) {
         key = graph->sorted_edges_array[i].src;
@@ -46,16 +56,17 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     free(graph->sorted_edges_array);
 
     graph->sorted_edges_array = sorted_edges_array;
-
+    
     return graph;
 
 }
 
-// struct Graph* radixSortEdgesBySourceOpenMP (struct Graph* graph){
+    struct Graph* radixSortEdgesBySourceOpenMP (struct Graph* graph){
 
-//         // printf("*** START Radix Sort Edges By Source OpenMP *** \n");
-
-// }
+        printf("*** START Radix Sort Edges By Source OpenMP *** \n");
+        
+        return NULL;
+    } 
 // struct Graph* radixSortEdgesBySourceMPI (struct Graph* graph){
 
 //         // printf("*** START Radix Sort Edges By Source MPI*** \n");
