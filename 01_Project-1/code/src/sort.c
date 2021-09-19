@@ -11,6 +11,7 @@
 struct Graph* countSortEdgesBySource (struct Graph* graph){
     //printf("--Parallized Count Sort-- \n");
 
+    int printThreads = 1;
     int i = 0;
     int key;
     int pos;
@@ -23,6 +24,7 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     #pragma omp parallel for shared(vertex_count,i)
     for(i=0; i < graph->num_vertices; ++i) {
         vertex_count[i] = 0;
+        if(printThreads)printf("Initialize array iteration=%d thread=%d\n",i,pthread_self());
     }
 
     // count occurrence of key: id of a source vertex
@@ -31,6 +33,7 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     for(i = 0; i < graph->num_edges; ++i) {
         key = graph->sorted_edges_array[i].src;
         vertex_count[key]++;
+        if(printThreads)printf("Count occurence iteration=%d thread=%d\n",i,pthread_self());
     }
 
     #pragma omp barrier
@@ -38,6 +41,7 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     // transform to cumulative sum
     for(i = 1; i < graph->num_vertices; ++i) {
         vertex_count[i] += vertex_count[i - 1];
+        if(printThreads)printf("Cumulative sum iteration=%d thread=%d\n",i,pthread_self());
     }
 
     omp_set_num_threads(4);
@@ -48,6 +52,7 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
         pos = vertex_count[key] - 1;
         sorted_edges_array[pos] = graph->sorted_edges_array[i];
         vertex_count[key]--;
+        if(printThreads)printf("Fill in sorted array iteration=%d thread=%d\n",i,pthread_self());
     }
 
 

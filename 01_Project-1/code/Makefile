@@ -104,7 +104,7 @@ test: app edgelist sort vertex timer bfs graph bitmap arrayQueue
 		 -o $(APP_DIR)/$(BIN_DIR)/$(APP)			\
 			$(CFLAGS)
 
-n=1
+n=2
 # r=3009230
 # f=./datasets/RMAT/RMAT22
 # r=6
