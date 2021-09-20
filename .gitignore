@@ -1,2 +1,4 @@
 01_Project-1/code/bin
-01_Project-1/code/obj
+01_Project-1/code/obj-openmp
+01_Project-1/code/obj-mpi
+01_Project-1/code/obj-hybrid
