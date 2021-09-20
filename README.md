@@ -33,13 +33,52 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
   ```bash
   cd 01_Project-1/code
   ```
-2. compile the code
+2. compile and run the code depending on which rule (openmp/mpi/hybrid) will generate a seperate binary
+
+3. run the code in openmp (bin/run-graph-openmp)
   ```bash
-  make
+  make run-openmp
   ```
-3. run the code
+4. run the code in mpi (bin/run-graph-mpi)
   ```bash
-  make run
+  make run-mpi
+  ```
+5. run the code in Hyrbid (openmp+mpi) (bin/run-graph-hybrid)
+  ```bash
+  make run-hybrid
+  ```
+
+### Add Modifications
+1. main.c/sort.c/sort.h files contain defines that are enabled depending on which rule you choose with the make file
+  ```code
+  make run-mpi
+
+#ifdef OPENMP_HARNESS
+
+// add code that you want to compile only for OpenMP
+
+#endif
+
+  ```
+  ```code
+  make run-mpi
+
+#ifdef MPI_HARNESS
+
+// add code that you want to compile only for MPI
+
+#endif
+
+  ```
+  ```code
+  make run-mpi
+
+#ifdef HYBRID_HARNESS
+
+// add code that you want to compile only for MPI+OpenMP
+
+#endif
+
   ```
 
 ## Organization
