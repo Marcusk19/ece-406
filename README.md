@@ -71,7 +71,7 @@ The need for parallel and massively parallel computers. Taxonomy of parallel com
 
   ```
   ```code
-  make run-mpi
+  make run-hybrid
 
 #ifdef HYBRID_HARNESS
 
