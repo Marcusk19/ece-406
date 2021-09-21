@@ -84,6 +84,9 @@ ALL_HEADER_FILES        =   $(INC_FILES_ALGO)
 #       		 OPEN GRAPH LIBRARY     				#
 #########################################################
 
+.PHONY: all
+all: app-openmp app-mpi app-hybrid
+
 .PHONY: directories
 directories :
 	@mkdir -p $(APP_DIR)/$(BIN_DIR)
@@ -97,19 +100,19 @@ directories :
 .PHONY: app-openmp
 app-openmp : directories $(APP_DIR)/$(BIN_DIR)/$(APP)-openmp
 	@echo "\n ******************************************************************************  "
-	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> openmp: ./$(word 3,$^)"
+	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> openmp: ./$(word 2,$^)"
 	@echo " ******************************************************************************  \n"
 
 .PHONY: app-mpi
 app-mpi : directories $(APP_DIR)/$(BIN_DIR)/$(APP)-mpi
 	@echo "\n ******************************************************************************  "
-	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> mpi: ./$(word 3,$^)"
+	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> mpi: ./$(word 2,$^)"
 	@echo " ******************************************************************************  \n"
 
 .PHONY: app-hybrid
 app-hybrid : directories $(APP_DIR)/$(BIN_DIR)/$(APP)-hybrid
 	@echo "\n ******************************************************************************  "
-	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> hybrid: ./$(word 3,$^)"
+	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> hybrid: ./$(word 2,$^)"
 	@echo " ******************************************************************************  \n"
 
 
