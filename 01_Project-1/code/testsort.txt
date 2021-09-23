@@ -1,0 +1,11 @@
+making main <- main.o
+making main <- edgelist.o
+making main <- sort.o
+making main <- vertex.o
+making main <- timer.o
+making main <- bfs.o
+making main <- graph.o
+making main <- bitmap.o
+making main <- arrayQueue.o
+linking main <- main.o edgelist.o sort.o vertex.o timer.o bfs.o graph.o
+./bin/main -f ./datasets/facebook/facebook_combined.txt -n 4 -r 3120 -h
