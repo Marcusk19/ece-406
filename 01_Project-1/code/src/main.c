@@ -165,14 +165,10 @@ int main(int argc, char **argv)
     printf("| %-51s | \n", "COUNT Sort Graph");
     printf(" -----------------------------------------------------\n");
     Start(timer);
-    graph = countSortEdgesBySource(graph); // you need to parallelize this function
-    // graph = radixSortEdgesBySourceOpenMP(graph); // you need to parallelize this function
-    Stop(timer);
-    printMessageWithtime("Time Sorting (Seconds)", Seconds(timer));
-
-
-    // For testing purpose.
-
+    //graph = countSortEdgesBySource(graph, 1); // you need to parallelize this function
+    #ifdef OPENMP_HARNESS
+        graph = radixSortEdgesBySourceOpenMP(graph);
+    #endif
     printf(" -----------------------------------------------------\n");
     printf("| %-51s | \n", "Map vertices to Edges");
     printf(" -----------------------------------------------------\n");
@@ -204,6 +200,8 @@ int main(int argc, char **argv)
 
     Stop(timer);
     printMessageWithtime("Time BFS (Seconds)", Seconds(timer));
+
+    //printEdgeArray(graph->sorted_edges_array, graph->num_edges);
 
     Start(timer);
     freeGraph(graph);
