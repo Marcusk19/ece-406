@@ -19,7 +19,7 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph);
 struct Graph *radixSortEdgesBySourceHybrid (struct Graph *graph);
 #endif
 
-struct Graph *countSortEdgesBySource (struct Graph *graph, int nbit);
+struct Graph *countSortEdgesBySource (struct Graph *graph, int radix);
 
 extern int numThreads;
 

@@ -1,1 +1,8 @@
 scp mskok@login.hpc.ncsu.edu:/home/mskok/program2.tgz /home/marcus/Documents/Projects/program2/program2.tgz 
+
+
+(key >> (radix * nbit)) & 0xff;
+
+0 -> 0
+
+double free or corruption (top)
