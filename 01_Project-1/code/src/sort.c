@@ -32,8 +32,7 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
         int pos;
         int P = omp_get_num_threads();
         int tid = omp_get_thread_num(); // used for parallization
-        int offset_start, offset_end; // used for parallization
-        int vert_start, vert_end;
+        int offset_start, offset_end,vert_start, vert_end; // used for parallization
         int nbit = 8; // used for radix sort
         
         offset_start = tid * (graph->num_edges/P);
@@ -45,10 +44,12 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
             offset_end = offset_start + (graph->num_edges/P);
             vert_end = vert_start + (graph->num_vertices/P);
         }
-        printf("num_vertices:%d\n", graph->num_vertices);
-        printf("num_edges:%d\n", graph->num_edges);
-        printf("edges %d to %d\n", offset_start, offset_end);
-        printf("vertices %d to %d\n", vert_start, vert_end);
+        if(tid == 0){
+            printf("num_vertices:%d\n", graph->num_vertices);
+            printf("num_edges:%d\n", graph->num_edges);
+        }
+        //printf("edges %d to %d\n", offset_start, offset_end);
+        //printf("vertices %d to %d\n", vert_start, vert_end);
 
         for(int i = vert_start; i < vert_end; i++){
             vertex_count[i] = 0;
@@ -59,17 +60,17 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
         for(int i = offset_start; i < offset_end; ++i)
         {
             key = graph->sorted_edges_array[i].src;
-            int temp = (key >> (radix * nbit)) & 0xffff;   
+            int temp = ((key>>(radix * nbit)) & 0xffff); 
             vertex_count[temp]++;
             //printf("tid:%d vertex_count[%d]=%d\n", tid, i, vertex_count[i]);
+            #pragma omp barrier
         }
         // transform to cumulative sum
-        #pragma omp barrier
-
         if(tid == 0){
+            printf("tid:%d vertex_count[%d]=%d\n",tid, 0,vertex_count[0]);
             for(int i = 1; i < graph->num_vertices; i++)  {
-                vertex_count[i] += vertex_count[i - 1];
                 //printf("tid:%d vertex_count[%d]=%d\n",tid, i,vertex_count[i]);
+                vertex_count[i] += vertex_count[i - 1];
             }
         }
         #pragma omp barrier
@@ -79,11 +80,11 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
         {
             key = graph->sorted_edges_array[i].src;
             int temp = (key >> (radix * nbit)) & 0xffff; // find 8-bit radix
-            pos = vertex_count[temp] - 1;
+            pos = vertex_count[temp]--;
             sorted_edges_array[pos] = graph->sorted_edges_array[i];
-            //printf("tid:%d %d->%d\n", tid, sorted_edges_array[i].src, sorted_edges_array[i].dest);
-            vertex_count[temp]--;
-        } 
+            //vertex_count[temp]--;
+        }
+        printf("tid(%d) finished\n",tid);
     } //end parallel region
 
     free(vertex_count);
@@ -97,10 +98,8 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
 struct Graph *radixSortEdgesBySourceOpenMP (struct Graph *graph)
 {
     printf("*** START Radix Sort Edges By Source OpenMP *** \n");
-
     for(int i = 1; i <= 4; i++){
         graph = countSortEdgesBySource(graph, i);
-        printEdgeArray(graph->sorted_edges_array, 10);
     }
     printEdgeArray(graph->sorted_edges_array, 100);
     return graph;
