@@ -64,14 +64,6 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
             //printf("tid:%d vertex_count[%d]=%d\n", tid, i, vertex_count[i]);
         }
         // transform to cumulative sum
-        if(tid == 0){
-            int sum = 0;
-            for(int i = 0; i < graph->num_vertices; ++i){
-                //printf("vertex_count[%d]=%d\n", i, vertex_count[i]);
-                sum += vertex_count[i];
-            }
-            printf("Cumulative end should be: %d\n", sum);
-        }
         #pragma omp barrier
 
         if(tid == 0){
@@ -79,11 +71,6 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
                 vertex_count[i] += vertex_count[i - 1];
                 //printf("tid:%d vertex_count[%d]=%d\n",tid, i,vertex_count[i]);
             }
-        }
-        #pragma omp barrier
-
-        if(tid == 0){
-            printf("Cumulative sum is: %d\n", vertex_count[graph->num_vertices-1]);
         }
         #pragma omp barrier
         // fill-in the sorted array of edges
@@ -102,7 +89,7 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
     free(vertex_count);
     free(graph->sorted_edges_array);
     graph->sorted_edges_array = sorted_edges_array;
-    //printEdgeArray(graph->sorted_edges_array, graph->num_edges);
+    printEdgeArray(graph->sorted_edges_array, graph->num_edges);
     return graph; 
 }
 
@@ -113,7 +100,7 @@ struct Graph *radixSortEdgesBySourceOpenMP (struct Graph *graph)
 
     for(int i = 1; i <= 4; i++){
         graph = countSortEdgesBySource(graph, i);
-        //printEdgeArray(graph->sorted_edges_array, 10);
+        printEdgeArray(graph->sorted_edges_array, 10);
     }
     printEdgeArray(graph->sorted_edges_array, 100);
     return graph;
