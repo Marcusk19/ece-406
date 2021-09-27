@@ -7,12 +7,13 @@
 #include "sort.h"
 #include "graph.h"
 
-struct Graph* countSortEdgesBySource (struct Graph* graph){
+struct Graph* countSortEdgesBySource (struct Graph* graph, int nbit){
 
     int i;
     int key;
     int pos;
     struct Edge *sorted_edges_array = newEdgeArray(graph->num_edges);
+    int radix = 8;
 
     // auxiliary arrays, allocated at the start up of the program
     int *vertex_count = (int*)malloc(graph->num_vertices*sizeof(int)); // needed for Counting Sort
@@ -24,7 +25,8 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     // count occurrence of key: id of a source vertex
     for(i = 0; i < graph->num_edges; ++i) {
         key = graph->sorted_edges_array[i].src;
-        vertex_count[key]++;
+        int temp = (key >> nbit*radix) & 0xffff;
+        vertex_count[temp]++;
     }
 
     // transform to cumulative sum
@@ -35,9 +37,11 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     // fill-in the sorted array of edges
     for(i = graph->num_edges - 1; i >= 0; --i) {
         key = graph->sorted_edges_array[i].src;
-        pos = vertex_count[key] - 1;
+        int temp = (key >> nbit*radix) & 0xffff;
+        printf("temp:%d\n",temp);
+        pos = vertex_count[temp] - 1;
         sorted_edges_array[pos] = graph->sorted_edges_array[i];
-        vertex_count[key]--;
+        vertex_count[temp]--;
     }
 
 
@@ -46,7 +50,7 @@ struct Graph* countSortEdgesBySource (struct Graph* graph){
     free(graph->sorted_edges_array);
 
     graph->sorted_edges_array = sorted_edges_array;
-
+    printEdgeArray(graph->sorted_edges_array, graph->num_edges);
     return graph;
 
 }

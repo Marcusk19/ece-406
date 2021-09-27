@@ -10,7 +10,7 @@
 // struct Graph* radixSortEdgesBySourceOpenMP (struct Graph* graph);
 // struct Graph* radixSortEdgesBySourceMPI (struct Graph* graph);
 // struct Graph* radixSortEdgesBySourceHybrid (struct Graph* graph);
-struct Graph* countSortEdgesBySource (struct Graph* graph);
+struct Graph* countSortEdgesBySource (struct Graph* graph, int nbit);
 
 extern int numThreads;
 
