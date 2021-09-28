@@ -165,9 +165,9 @@ int main(int argc, char **argv)
     printf("| %-51s | \n", "COUNT Sort Graph");
     printf(" -----------------------------------------------------\n");
     Start(timer);
-    graph = countSortEdgesBySource(graph, 2); // you need to parallelize this function
+    //graph = countSortEdgesBySource(graph, 2); // you need to parallelize this function
     #ifdef OPENMP_HARNESS
-        //graph = radixSortEdgesBySourceOpenMP(graph);
+        graph = radixSortEdgesBySourceOpenMP(graph);
     #endif
     Stop(timer);
     printMessageWithtime("Time Sorting (Seconds)", Seconds(timer));
