@@ -90,7 +90,7 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
         for(int i = offset_end - 1; i >= offset_start; i--){
             key = graph->sorted_edges_array[i].src;
             int temp = (key>>(radix * nbit)) & 0xff;
-            pos = vertex_count[tid*graph->num_vertices+temp]-1;
+            pos = vertex_count[tid*graph->num_vertices+temp]-1; // here a specific thread's index = tid*graph->num_vertices+temp
             sorted_edges_array[pos] = graph->sorted_edges_array[i];
             vertex_count[tid*graph->num_vertices+temp]--;
         }
@@ -108,7 +108,7 @@ struct Graph *radixSortEdgesBySourceOpenMP (struct Graph *graph)
 {
     printf("*** START Radix Sort Edges By Source OpenMP *** \n");
     int n = sizeof(graph->num_vertices);
-    int P;
+    /*int P;
     printf("n:%d \n", n);
     #pragma omp parallel
     { // start parallel region
@@ -119,12 +119,12 @@ struct Graph *radixSortEdgesBySourceOpenMP (struct Graph *graph)
             P = omp_get_num_threads();
         }
 
-        offset_start = tid * (n/P);
-    } // end parallel region
-    for(int i = 1; i <= 4; i++){
+    } // end parallel region 
+    */
+    for(int i = 0; i < n; i++){
         graph = countSortEdgesBySource(graph, i);
     }
-    printEdgeArray(graph->sorted_edges_array, 100);
+    printEdgeArray(graph->sorted_edges_array, graph->num_edges);
     return graph;
 }
 #endif
