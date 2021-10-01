@@ -26,8 +26,8 @@ BIN_DIR			  	= bin
 BENCHMARKS_DIR    	= ./datasets
 
 #Tests
- GRAPH_NAME = wiki-vote
-# GRAPH_NAME = facebook
+# GRAPH_NAME = wiki-vote
+ GRAPH_NAME = facebook
 # GRAPH_NAME = test
 
 # GONG # https://gonglab.pratt.duke.edu/google-dataset

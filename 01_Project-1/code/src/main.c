@@ -52,7 +52,6 @@ static void usage(void)
 int main(int argc, char **argv)
 {
 
-
     char *fvalue = NULL;
     char *rvalue = NULL;
     char *nvalue = NULL;
@@ -169,6 +168,13 @@ int main(int argc, char **argv)
     //graph = radixSortEdgesBySourceOpenMP(graph);
     #ifdef OPENMP_HARNESS
         graph = radixSortEdgesBySourceOpenMP(graph);
+    #endif
+
+    #ifdef MPI_HARNESS
+        MPI_Init(&argc,&argv);
+        graph = radixSortEdgesBySourceMPI(graph);
+        //printf("Hello World!!!!!\n");
+        MPI_Finalize();
     #endif
     Stop(timer);
     printMessageWithtime("Time Sorting (Seconds)", Seconds(timer));
