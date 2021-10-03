@@ -14,7 +14,7 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix);
 
 #ifdef MPI_HARNESS
 struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph);
-struct Edge *countSortEdgesBySource (struct Edge *edgelist, int radix, int num_vertices, int num_edges);
+struct Edge *countSortEdgesBySource (struct Edge *edgelist, int radix, int num_vertices, int num_edges, int *global_vertex_count);
 #endif
 
 #ifdef HYBRID_HARNESS

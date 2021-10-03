@@ -123,10 +123,10 @@ struct Graph *radixSortEdgesBySourceOpenMP (struct Graph *graph)
 
 //-------------------- MPI_HARNESS----------------------------------
 #ifdef MPI_HARNESS
-struct Edge*countSortEdgesBySource (struct Edge *edgelist, int radix, int num_vertices, int num_edges)
+struct Edge*countSortEdgesBySource (struct Edge *edgelist, int radix, int num_vertices, int num_edges, int *global_vertex_count)
 {   
-    printf("count sort for radix %d\n", radix);
-    printf("num_edges=%d, num_vertices=%d\n", num_edges, num_vertices);
+    // printf("count sort for radix %d\n", radix);
+    // printf("num_edges=%d, num_vertices=%d\n", num_edges, num_vertices);
     int i;
     int key;
     int pos;
@@ -137,23 +137,25 @@ struct Edge*countSortEdgesBySource (struct Edge *edgelist, int radix, int num_ve
     for(i = 0; i < num_vertices; i++){
         vertex_count[i] = 0;
     }
-    printf("radix(%d) init. ok :) \n", radix);
+    // printf("radix(%d) init. ok :) \n", radix);
     // count occurence of key:
     for(i = 0; i < num_edges; i++){
         key = edgelist[i].src;
         int temp = (key>>(radix*nbit)) & 0xff;
-        //printf("radix:%d, key:%d, temp:%d\n", radix, key, temp);
+        // printf("radix:%d, key:%d, temp:%d\n", radix, key, temp);
         vertex_count[temp]++;
-        //printf("vertex_count[%d]=%d\n", temp, vertex_count[temp]);
+        // printf("vertex_count[%d]=%d\n", temp, vertex_count[temp]);
     }
+    
     MPI_Barrier(MPI_COMM_WORLD);
-    printf("radix(%d) count ok :)\n", radix);
+    MPI_Allreduce( vertex_count , global_vertex_count , num_vertices , MPI_INT , MPI_SUM , MPI_COMM_WORLD);
+    // printf("radix(%d) count ok :)\n", radix);
     // transform to cumulative sum
     for(i = 1; i < num_vertices; i++){
         vertex_count[i] += vertex_count[i-1];
         //printf("vertex_count[%d]=%d\n", i, vertex_count[i]);
     }
-    printf("radix(%d) cumulative ok :)\n", radix);
+    // printf("radix(%d) cumulative ok :)\n", radix);
     // printf("vertex_count[%d]=%d\n", num_vertices-1, vertex_count[num_vertices-1]);
     // fill-in sorted array
     for(i = num_edges-1; i >= 0; i--){
@@ -163,53 +165,77 @@ struct Edge*countSortEdgesBySource (struct Edge *edgelist, int radix, int num_ve
         sorted_edges_array[pos] = edgelist[i];
         vertex_count[temp]--;
     }
-    printf("radix(%d) fill-in ok :)\n", radix);
-    MPI_Barrier(MPI_COMM_WORLD);
+    // printf("radix(%d) fill-in ok :)\n", radix);
     free(vertex_count);
-    // printEdgeArray(sorted_edges_array, num_edges);
     return sorted_edges_array; 
+}
+
+void my_sum(struct Edge* inputBuffer, struct Edge* outputBuffer, int* len, MPI_Datatype* datatype){
+    struct Edge result;
+    int i;
+    for(i = 0; i < *len; i++){
+        if(!(outputBuffer->src == 0 && outputBuffer->dest == 0) != !(inputBuffer->src == 0 && inputBuffer->dest == 0)){
+            result.src = inputBuffer->src + outputBuffer->src;
+            result.dest = inputBuffer->dest + outputBuffer->dest;
+            printf("adding %d->%d + %d->%d = %d->%d\n", inputBuffer->src, inputBuffer->dest, outputBuffer->src, outputBuffer->dest, result.src, result.dest);
+            *outputBuffer = result;
+            inputBuffer++;
+            outputBuffer++;
+        }
+        // else outputBuffer++;
+    }
 }
 
 struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
 {
     printf("*** Start Radix Sort Edges By Source MPI ***\n");
-    int myid, numprocs, offset_start, offset_end, edges_per_proc, num_vertices;
+    #define nbit 8
+    int myid, numprocs, offset_start, offset_end, edges_per_proc, num_vertices, bits_per_proc;
     int n = sizeof(graph->num_vertices);
-
-    struct Edge *my_edgelist;
-    struct Edge *tmp_edges;
+    struct Edge *tmp_sorted;
+    // struct Edge *my_edgelist;
     struct Edge *edge_buffer;
     
-
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+
+    int *global_vertex_count = (int*)malloc(graph->num_vertices*sizeof(int));
+    for(int i = 0; i < graph->num_vertices; i++) global_vertex_count[i]=0;
 
     if(myid == 0) printf("n: %d\n",n);
     printf("I am %d of %d\n", myid,numprocs);
     
-
-    edges_per_proc = (graph->num_edges/numprocs);
-    printf("edges_per_proc: %d\n", edges_per_proc);
-    // create buffer to hold subset of edge array
+    // calculate how many edges per process
     if(myid == numprocs - 1){
-        edges_per_proc += graph->num_edges%numprocs;
+        edges_per_proc = (graph->num_edges/numprocs) + (graph->num_edges%numprocs);
+        bits_per_proc = (nbit/numprocs) + (nbit%numprocs);
+    } else {
+        edges_per_proc = (graph->num_edges/numprocs);
+        bits_per_proc = (nbit/numprocs);
     }
+    // printf("edges_per_proc: %d\n", edges_per_proc);
+
+    // create buffer to hold subset of edge array
     edge_buffer = newEdgeArray(edges_per_proc);
+    tmp_sorted = newEdgeArray(graph->num_edges);
 
-    num_vertices = (graph->num_vertices/numprocs);
 
+    num_vertices = graph->num_vertices;
+
+
+    // initialize arrays for scatterv
     int scatter_displacements[numprocs];
     for(int i = 0; i < numprocs; i++){
         scatter_displacements[i] = edges_per_proc * i;
-        printf("rank(%d)scatter_displacements[%d]=%d\n",myid,i,scatter_displacements[i]);
+        // printf("rank(%d)scatter_displacements[%d]=%d\n",myid,i,scatter_displacements[i]);
     }
     int counts_send[numprocs];
     for(int i = 0; i < numprocs-1; i++){
-        counts_send[i] = edges_per_proc;
-        printf("counts_send[%d]=%d\n", i, counts_send[i]);
+        counts_send[i] = graph->num_edges/numprocs;
+        // printf("counts_send[%d]=%d\n", i, counts_send[i]);
     }
     counts_send[numprocs-1] = (graph->num_edges/numprocs) + (graph->num_edges%numprocs);
-    printf("counts_send[%d]=%d\n", numprocs-1, counts_send[numprocs-1]);
+    // printf("counts_send[%d]=%d\n", numprocs-1, counts_send[numprocs-1]);
 
     // build datatype for struct Edge
         int lengths[2] = {1, 1};
@@ -225,58 +251,130 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
         MPI_Datatype types[2] = {MPI_INT, MPI_INT};
         MPI_Type_create_struct(2, lengths, displacements, types, &edge_type);
         MPI_Type_commit(&edge_type);
+  
+    // build operator for reduction sum
+        // MPI_Datatype edge_type;
+        // MPI_Type_contiguous( 2 , MPI_INT , &edge_type);
+        MPI_Op my_op;
+        MPI_Op_create(my_sum , 1 , &my_op);   
     // split data to processors using MPI_Scatter
     
     for(int radix = 0; radix < 1; radix++){
+
+        // scatter the edge array to each process
         if(myid == 0){
             MPI_Scatterv(graph->sorted_edges_array,  counts_send, scatter_displacements, edge_type , edge_buffer, edges_per_proc, edge_type , 0 , MPI_COMM_WORLD);
+            printf("rank(0) received:\n");
+            printEdgeArray(edge_buffer, edges_per_proc);
         } else {
             MPI_Scatterv( NULL , NULL , NULL , edge_type , edge_buffer , counts_send[myid] , edge_type , 0 , MPI_COMM_WORLD);
+            // printf("rank(1) received:\n");
+            // printEdgeArray(edge_buffer, edges_per_proc);
         }
-        printf("rank(%d) received from scatterv\n", myid);
-        for(int i = edges_per_proc - 1; i >= edges_per_proc - 10; i--){
-            printf("rank(%d)edge_buffer[%d]=%d->%d\n", myid, i, edge_buffer[i].src, edge_buffer[i].dest);
-        }
-        edge_buffer = countSortEdgesBySource(edge_buffer, radix, num_vertices, edges_per_proc);
-        printf("rank(%d) count sorted radix(%d)\n", myid, radix);
-
-        // if(myid == 1){
-        //     printEdgeArray(edge_buffer, edges_per_proc);
+        // printf("rank(%d) received from scatterv\n", myid);
+        // for(int i = edges_per_proc - 1; i >= edges_per_proc - 10; i--){
+        //     printf("rank(%d)edge_buffer[%d]=%d->%d\n", myid, i, edge_buffer[i].src, edge_buffer[i].dest);
         // }
 
-
-        if(myid == 0){
-            my_edgelist = newEdgeArray(graph->num_edges);
-            MPI_Gatherv(edge_buffer , edges_per_proc , edge_type , my_edgelist , counts_send, scatter_displacements, edge_type , 0 , MPI_COMM_WORLD);
-            free(graph->sorted_edges_array);
-            graph->sorted_edges_array = my_edgelist;
-            //if(radix == 0)printEdgeArray(graph->sorted_edges_array, graph->num_edges);
-        //     free(my_edgelist);
-        } else {
-            MPI_Gatherv(edge_buffer, edges_per_proc, edge_type, NULL, NULL, NULL, edge_type, 0, MPI_COMM_WORLD);
-        }
-
-        // merge arrays
+        // process each local array
+        edge_buffer = countSortEdgesBySource(edge_buffer, radix, num_vertices, edges_per_proc, global_vertex_count);
+        MPI_Barrier( MPI_COMM_WORLD);
+        // printf("--------------------------rank(%d) count sorted radix(%d)--------------------------\n", myid, radix);
+        // printf("\n");
+        // printEdgeArray(edge_buffer, edges_per_proc);
+        // for(int i = 0; i < num_vertices; ++i){
+        //     printf("global[%d]=%d\n", i, global_vertex_count[i]);
+        // }
+        // redistribute data among arrays
+        if(numprocs == 1) continue;
+        struct Edge *window_buffer = newEdgeArray(edges_per_proc);
+        //printf("sizeof(struct Edge)=%d\n", sizeof(window_buffer[0]));
+        MPI_Win window;
+        // MPI_Win_allocate(edges_per_proc * sizeof(struct Edge), sizeof(struct Edge), MPI_INFO_NULL, MPI_COMM_WORLD, &window_buffer, &window);
+        MPI_Win_create(window_buffer, edges_per_proc*sizeof(window_buffer[0]), sizeof(window_buffer[0]), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+        MPI_Win_fence(0, window);
+        printf("rank(%d) window created\n", myid);
+        struct Edge *temp_edges = newEdgeArray(edges_per_proc);
+        int current_receiver = 0;
+        int current_receiver_len;
+        int window_index = 0;
+        for(int i = 0; i < ((num_vertices >> (radix*nbit)) & 0xff); ++i){
+            if(global_vertex_count[i] == 0) continue; // skip iterations where we know there is no radix in graph
+            // go through each possible radix value lowest to highest
+            int current_radix = (i >> (radix*nbit))& 0xff;
+            
+            int update_receiver;
+            if(myid == current_receiver){ // checking for buffer overflow -> go to next process
+                if(window_index >= edges_per_proc){
+                    update_receiver = current_receiver + 1;
+                    window_index = 0;
+                } else {
+                    update_receiver = current_receiver;
+                }
+                if(update_receiver == current_receiver + 1 && update_receiver == numprocs - 1){
+                    current_receiver_len = edges_per_proc + graph->num_edges%numprocs;
+                } else {
+                    current_receiver_len = edges_per_proc;
+                }
+            }
+            MPI_Bcast(&update_receiver, 1, MPI_INT, current_receiver, MPI_COMM_WORLD);
+            MPI_Bcast(&window_index, 1, MPI_INT, current_receiver, MPI_COMM_WORLD);
+            MPI_Bcast(&current_receiver_len, 1, MPI_INT, current_receiver, MPI_COMM_WORLD);
+            current_receiver = update_receiver;
+            if(myid != current_receiver) printf("rank(%d) receiver is %d and window_index is %d and receiver len is %d\n", myid, current_receiver, window_index, current_receiver_len);
         
+            for(int j = 0; j < edges_per_proc; j++){
+                int key = edge_buffer[j].src;
+                int temp = (key >> (radix*nbit)) & 0xff;
+                if(myid == current_receiver){
+                    if(temp == current_radix){
+                        window_buffer[window_index] = edge_buffer[j];
+                        printf("rank(%d) added %d to buffer\n", myid, window_buffer[window_index].src);
+                        window_index++;
+                    }
+                    if(window_buffer[window_index].src != 0 && window_buffer[window_index].dest != 0){
+                        printf("rank(%d) received value: %d\n", myid, window_buffer[window_index].src);
+                        window_index++;
+                    }
+                }
+                if(myid != current_receiver){
+                    if(temp == current_radix){
+                        struct Edge to_send = edge_buffer[j];
+                        printf("rank(%d) sending value: %d\n", myid, to_send.src);
+                        MPI_Put(&to_send, 1, edge_type, current_receiver, window_index, 1, edge_type, window);
+                    }
+                }
+            }
+
+        } // end for i
+        MPI_Win_free(&window);  
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(myid == 0) printEdgeArray(window_buffer, edges_per_proc);
     }
+    
 
 
-    for(int i = graph->num_edges-1; i >= graph->num_edges-11; i--){
-        printf("%d->%d\n", my_edgelist[i].src, my_edgelist[i].dest);
-    }
+    // for(int i = graph->num_edges-1; i >= graph->num_edges-11; i--){
+    //     printf("%d->%d\n", my_edgelist[i].src, my_edgelist[i].dest);
+    // }
     
 
     
     // MPI_Barrier(MPI_COMM_WORLD);
     // printf("--------rank(%d) edgelist--------\n", myid);
     // printEdgeArray(my_edgelist, 10);
-    
-    // for(int i = 0; i < n; i++){
-    //     my_edgelist = countSortEdgesBySource(graph->sorted_edges_array, i, graph->num_vertices, graph->num_edges);
+    // int count = 0;
+    // for(int i = 0; i < graph->num_edges; i++){
+ 
+    //     if (graph->sorted_edges_array[i].src == graph->sorted_edges_array[i].dest && graph->sorted_edges_array[i].src == 0) count++;
     // }
+    // if(myid==0) printf("rank(%d)number of holes in array of %d length: %d\n",myid, graph->num_edges, count);
     //free(graph->sorted_edges_array);
     //graph->sorted_edges_array = my_edgelist;
-    // printEdgeArray(graph->sorted_edges_array, graph->num_edges);
+    // if(myid==0) printEdgeArray(graph->sorted_edges_array, graph->num_edges);
+
+    free(global_vertex_count);
+    MPI_Op_free(&my_op);
     return graph;
 }
 #endif
