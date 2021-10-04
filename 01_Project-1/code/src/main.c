@@ -174,7 +174,7 @@ int main(int argc, char **argv)
         MPI_Init(&argc,&argv);
         graph = radixSortEdgesBySourceMPI(graph);
         MPI_Finalize();
-        // printEdgeArray(graph->sorted_edges_array, graph->num_edges);
+        printEdgeArray(graph->sorted_edges_array, graph->num_edges);
     #endif
     Stop(timer);
     printMessageWithtime("Time Sorting (Seconds)", Seconds(timer));

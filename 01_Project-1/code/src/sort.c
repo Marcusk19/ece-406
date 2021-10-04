@@ -318,16 +318,15 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
     } // end of for radix
     
     if(myid == 0){
-        for(int i = 0; i < graph->num_edges; i++){
-            graph->sorted_edges_array[i] = feedback_array[i];
-        }
+        // swap arrays
+        struct Edge *temp_pointer = graph->sorted_edges_array;
+        graph->sorted_edges_array = feedback_array;
+        feedback_array = temp_pointer;
     }
     free(global_vertex_count);
     printf("rank(%d) freed global_vertex_count\n", myid);
-    MPI_Bcast( graph->sorted_edges_array , graph->num_edges , edge_type , 0 , MPI_COMM_WORLD); // broadcast sorted graph to all processors
-    if(myid == 1){
-        printEdgeArray(graph->sorted_edges_array, graph->num_edges);
-    }
+    // MPI_Bcast( graph->sorted_edges_array , graph->num_edges , edge_type , 0 , MPI_COMM_WORLD); // broadcast sorted graph to all processors
+
     return graph;
 }
 #endif
