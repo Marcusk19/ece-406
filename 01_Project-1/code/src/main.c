@@ -173,8 +173,8 @@ int main(int argc, char **argv)
     #ifdef MPI_HARNESS
         MPI_Init(&argc,&argv);
         graph = radixSortEdgesBySourceMPI(graph);
-        //printf("Hello World!!!!!\n");
         MPI_Finalize();
+        // printEdgeArray(graph->sorted_edges_array, graph->num_edges);
     #endif
     Stop(timer);
     printMessageWithtime("Time Sorting (Seconds)", Seconds(timer));
