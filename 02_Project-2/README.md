@@ -49,11 +49,19 @@ Do all the above experiments for MSI, MESI and Dragon protocols. For each simula
 
 ## Getting Started
 
-1. In order to “make” your simulator, you need to execute the following command: (You may need to make changes to the Makefile, if you add your own files.)
+1. Obtain the updated code:
+
+```
+git clone https://github.ncsu.edu/atmughra/ECE-506-406-Projects.git
+```
+
+(Or git pull, be careful of merges overwriting your project 1 if you are unfamiliar with git).
+
+2. In order to “make” your simulator, you need to execute the following command in the `02_Project-2/code/src` directory: (You may need to make changes to the Makefile, if you add your own files.)
  ```
 make clean; make; make clobber
   ```
-2. After making successfully, it should print out the following:
+3. After making successfully, it should print out the following:
 ```
 ----------------------------------------------------------
 -----------FALL21-506-406 SMP SIMULATOR (SMP_CACHE)-----------
