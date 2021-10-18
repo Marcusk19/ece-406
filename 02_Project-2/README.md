@@ -4,7 +4,7 @@
 # Due on Nov 15, 2021, (11:55) PM
 
 ## Tasks:
-### In this machine problem you will
+### In this project you will
 In this project, individual students will implement a trace driven SMP simulator (shared multiprocessor simulator). You will be given a C++ generic‐cache class, and you need to extend that class to work in a multi processor environment and to build various coherence protocols on top of it. You need to write it in C++ and you need to build it on a Linux machine. The most challenging part of this machine problem is to understand how caches and coherence protocols are implemented. Once you understand this, the rest of the assignment would be straightforward. The purpose of this project is to give you an idea of how parallel architecture designs are evaluated, and how to interpret performance data.
 
 ## Simulator
@@ -19,7 +19,8 @@ You will be provided with a working C++ class for a uni core system cache, namel
 * **It is recommended to always to go back to the book as a reference.**
     * (NEW) Fundamentals of Parallel Multi-core Architecture (Chapman & Hall/CRC Computational Science) 1st Edition-2015 by Yan Solihin (Author).
     * Fundamentals of Parallel Computer Architecture Paperback-2009 by Yan Solihin (Author).
-* This framework developed on Ubuntu-Linux. It is your responsibility to make it work on windows or other systems. It should work out-of-the-box on any linux machine. Let the TA's know if you have trouble accessing one. ARC/HPC are NOT needed for this project.
+    * This framework developed on Ubuntu-Linux. It is your responsibility to make it work on windows or other systems. It should work out-of-the-box on any linux machine. Let the TA's know if you have trouble accessing one. 
+    * ARC/HPC are NOT needed for this project.
 
 ## Problems
 ### Coding
@@ -85,7 +86,7 @@ Compilation Done ---> nothing else to make :)
 
 
 ## Organization
-* `03_FinalProject` - Machine Problem 3
+* `02_Project-2` - Project 2
   * `code` - base code for the problem
     * `trace`- trace data set
     * `val.v2` - validation data sets for the code
