@@ -68,7 +68,7 @@ make clean; make; make clobber
 ----------------------------------------------------------
 Compilation Done ---> nothing else to make :) 
 
-  ```
+```
 3. An executable called “smp_cache” should be created.
 4. In order to run your simulator, you need to execute the following command:
 ```
@@ -135,7 +135,6 @@ ECE 406:
 * If your output does not ‐exactly‐ match any validation run, you will be given only 10% for that part. (Instead of 25%) 
 * If your output does not match the secret runs, you will get 0% for that part. 
 * In order to get full credit for the report, you need to provide detailed discussion and performance evaluations results. 
-* Automatic 2‐day extension beyond the deadline is given. However, extra 3 points will be given if the assignment is submitted before the deadline.  
 
 ## Implementation suggestions
 1. Read the given code carefully `cache.cc, cache.h`, and understand how a single cache works. 
