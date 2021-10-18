@@ -13,7 +13,7 @@ You will be provided with a working C++ class for a uni core system cache, namel
 
 ![SMP](https://github.ncsu.edu/atmughra/ECE-506-406-Projects/blob/main/02_Project-2/fig1.png)
 
-**Your job in this project is to instantiate these peer caches, and to maintain coherence across them by applying, MSI, MESI, and Dragon coherence protocols.**
+**Your job in this project is to instantiate these peer caches, and to maintain coherence across them by applying, MSI, MESI, and Dragon (506 only) coherence protocols.**
 ## Please note the following
 
 * **It is recommended to always to go back to the book as a reference.**
@@ -105,7 +105,8 @@ zip unityID.zip *.cc *.h Makefile report.pdf
  No folders are allowed in your zip file. We will test your project only on grendel `grendel.ece.ncsu.edu` machine, so make sure your project can be properly compiled (using make command) and run on grendel before submission.
  
  ## Grading Policy
-Grade will be distributed as follows: 
+Grade will be distributed as follows:    
+
 ECE 506:
 
 * 25%: MSI 
