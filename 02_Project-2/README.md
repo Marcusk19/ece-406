@@ -95,7 +95,8 @@ Compilation Done ---> nothing else to make :)
         * `cache.h.cc`
         * `main.cc`
         * `Makefile` 
-
+  * `doc` - Project specs in PDF
+  
 The directory `val.v2` contains validation runs you are asked to match, you have to literally match the output files, since we are going to use `diff` in order to spot out any differences. If your output does not match the given validations in terms of results and formats, you will be deducted points. You can use the following command to check if your output matches the given validation runs: 
 ```
 diff –iw <your_file> <validation_run>
