@@ -70,8 +70,8 @@ make clean; make; make clobber
 Compilation Done ---> nothing else to make :) 
 
 ```
-3. An executable called “smp_cache” should be created.
-4. In order to run your simulator, you need to execute the following command:
+4. An executable called “smp_cache” should be created.
+5. In order to run your simulator, you need to execute the following command:
 ```
 ./smp_cache <cache_size>  <assoc> <block_size> <num_processors> <protocol> <trace_file>
 ```
