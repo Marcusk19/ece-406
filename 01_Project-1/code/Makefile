@@ -98,18 +98,21 @@ directories :
 ##################################################
 
 .PHONY: app-openmp
+app-openmp: MODE = -DOPENMP_HARNESS
 app-openmp : directories $(APP_DIR)/$(BIN_DIR)/$(APP)-openmp
 	@echo "\n ******************************************************************************  "
 	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> openmp: ./$(word 2,$^)"
 	@echo " ******************************************************************************  \n"
 
 .PHONY: app-mpi
+app-mpi: MODE = -DMPI_HARNESS
 app-mpi : directories $(APP_DIR)/$(BIN_DIR)/$(APP)-mpi
 	@echo "\n ******************************************************************************  "
 	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> mpi: ./$(word 2,$^)"
 	@echo " ******************************************************************************  \n"
 
 .PHONY: app-hybrid
+app-hybrid: MODE = -DHYBRID_HARNESS
 app-hybrid : directories $(APP_DIR)/$(BIN_DIR)/$(APP)-hybrid
 	@echo "\n ******************************************************************************  "
 	@echo " * DONE!! NOTHING ELSE TO COMPILE ---> hybrid: ./$(word 2,$^)"
@@ -168,31 +171,25 @@ clean-all:
 
 
 .PHONY: run-openmp
-run-openmp: MODE = -DOPENMP_HARNESS
 run-openmp: app-openmp
 	./$(APP_DIR)/$(BIN_DIR)/$(APP)-openmp -f $(FILE_BIN) $(ARGS)
 
 .PHONY: run-mpi
-run-mpi: MODE = -DMPI_HARNESS
 run-mpi: app-mpi
 	./$(APP_DIR)/$(BIN_DIR)/$(APP)-mpi -f $(FILE_BIN) $(ARGS)
 
 .PHONY: run-hybrid
-run-hybrid: MODE = -DHYBRID_HARNESS
 run-hybrid: app-hybrid
 	./$(APP_DIR)/$(BIN_DIR)/$(APP)-hybrid -f $(FILE_BIN) $(ARGS)
 
 .PHONY: debug-openmp
-debug-openmp: MODE = -DOPENMP_HARNESS
 debug-openmp: app-openmp
 	gdb -ex=r --args ./$(APP_DIR)/$(BIN_DIR)/$(APP)-openmp -f $(FILE_BIN) $(ARGS)
 
 .PHONY: debug-mpi
-debug-mpi: MODE = -DMPI_HARNESS
 debug-mpi: app-mpi
 	gdb -ex=r --args ./$(APP_DIR)/$(BIN_DIR)/$(APP)-mpi -f $(FILE_BIN) $(ARGS)
 
 .PHONY: debug-hybrid
-debug-hybrid: MODE = -DHYBRID_HARNESS
 debug-hybrid: app-hybrid
 	gdb -ex=r --args ./$(APP_DIR)/$(BIN_DIR)/$(APP)-hybrid -f $(FILE_BIN) $(ARGS)
