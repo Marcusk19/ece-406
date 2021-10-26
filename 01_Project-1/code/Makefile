@@ -26,9 +26,9 @@ BIN_DIR			  	= bin
 BENCHMARKS_DIR    	= ./datasets
 
 #Tests
-# GRAPH_NAME = wiki-vote
+GRAPH_NAME = wiki-vote
 # GRAPH_NAME = facebook
-GRAPH_NAME = test
+# GRAPH_NAME = test
 
 # GONG # https://gonglab.pratt.duke.edu/google-dataset
 # GRAPH_NAME = gplus
@@ -47,7 +47,7 @@ FILE_BIN_TYPE = graph.txt
 FILE_BIN = $(BENCHMARKS_DIR)/$(GRAPH_NAME)/$(FILE_BIN_TYPE)
 
 
-NUM_THREADS   = 4
+NUM_THREADS   = 10
 ROOT 		  = 1
 
 ARGS = -n $(NUM_THREADS) -r $(ROOT) -h

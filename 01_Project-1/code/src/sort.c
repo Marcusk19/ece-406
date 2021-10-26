@@ -28,7 +28,7 @@ struct Graph *countSortEdgesBySource (struct Graph *graph, int radix)
     int key;
     int pos;
     int P;
-    int nbit = 8; // used for radix sort
+    int nbit = 16; // used for radix sort
     int base = 0;
 
     // auxillary arrays, allocated at the start up of the program
@@ -98,7 +98,6 @@ struct Graph *radixSortEdgesBySourceOpenMP (struct Graph *graph)
         graph = countSortEdgesBySource(graph, i);
     }
 
-    printEdgeArray(graph->sorted_edges_array, graph->num_edges);
     return graph;
 }
 #endif
@@ -162,7 +161,7 @@ struct Edge*countSortEdgesBySource (struct Edge *edgelist, int radix, int num_ve
 struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
 {
     printf("*** Start Radix Sort Edges By Source MPI ***\n");
-    #define nbit 8
+    #define nbit 16
     int myid, numprocs, edges_per_proc, num_vertices;
     int n = sizeof(graph->num_vertices);
     struct Edge *edge_buffer;
@@ -212,6 +211,8 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
         MPI_Get_address(&dummy_edge, &base_address);
         MPI_Get_address( &dummy_edge.src , &displacements[0]);
         MPI_Get_address( &dummy_edge.dest , &displacements[1]);
+        // displacements[0] = &displacements[0] - &base_address;
+        // displacements[1] = &displacements[1]- &base_address;
         displacements[0] = MPI_Aint_diff(displacements[0], base_address);
         displacements[1] = MPI_Aint_diff(displacements[1], base_address);
         MPI_Datatype types[2] = {MPI_INT, MPI_INT};
@@ -287,7 +288,9 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
                 }   
                 if(tmp_index >= graph->num_edges) break;
             }
-            
+            // I have tried multiple ways to swap the sorted_edges_array without running into memory issues
+            // ideally I would broacast this information to all processes but I can't get it to work so 
+            // for now I am keeping it only on the root process
             struct Edge *temp_pointer = graph->sorted_edges_array;
             graph->sorted_edges_array = tmp_edges;
             tmp_edges = temp_pointer; 
@@ -297,9 +300,9 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
 
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Win_free(&window); 
+        // free(tmp_edges);
     } // end of for radix
     
-
     free(global_vertex_count);
     printf("rank(%d) freed global_vertex_count\n", myid);
     return graph;
@@ -308,7 +311,7 @@ struct Graph *radixSortEdgesBySourceMPI (struct Graph *graph)
 
 #ifdef HYBRID_HARNESS
 struct Graph *radixSortEdgesBySourceHybrid (struct Graph *graph)
-{
+{   
 
     printf("*** START Radix Sort Edges By Source Hybrid*** \n");
     return graph;
