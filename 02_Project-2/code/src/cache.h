@@ -16,7 +16,10 @@ typedef unsigned int uint;
 enum{
 	INVALID = 0,
 	VALID,
-	DIRTY
+	DIRTY,
+   // added modified and shared for MSI
+   MODIFIED,
+   SHARED
 };
 
 class cacheLine 
@@ -47,6 +50,8 @@ protected:
    //******///
    //add coherence counters here///
    //******///
+   // ulong dirtyBlocks, c2cTransfers, memoryTransactions, interventions,
+   //       invalidations, flushes, busRdX;
 
    cacheLine **cache;
    ulong calcTag(ulong addr)     { return (addr >> (log2Blk) );}
