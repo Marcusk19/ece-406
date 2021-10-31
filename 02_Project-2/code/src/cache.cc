@@ -47,7 +47,7 @@ Cache::Cache(int s,int a,int b )
 /**you might add other parameters to Access()
 since this function is an entry point 
 to the memory hierarchy (i.e. caches)**/
-void Cache::Access(ulong addr,uchar op)
+void Cache::Access(ulong addr,uchar op, int protocol)
 {
    currentCycle++;/*per cache global counter to maintain LRU order 
          among cache ways, updated on every cache access*/
@@ -155,9 +155,9 @@ void Cache::printStats()
    printf("02. number of read misses:     %ld\n", readMisses);
    printf("03. number of writes:          %ld\n", writes);
    printf("04. number of write misses:    %ld\n", writeMisses);
-
+   // printf("05. total miss rate:           %f\n", (double)((writeMisses + readMisses)/(reads + writes) * 100));
    printf("06. number of writebacks:      %ld\n", writeBacks);
-   printf("07. number of cache-tocache transfers: \n");
+   printf("07. number of cache-to-cache transfers: \n");
    printf("08. number of memory transactions:\n");
    printf("09. number of interventions: \n");
    printf("10. number of invalidations: \n");

@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	int cache_assoc= atoi(argv[2]);
 	int blk_size   = atoi(argv[3]);
 	int num_processors = atoi(argv[4]);/*1, 2, 4, 8*/
-	// int protocol   = atoi(argv[5]);	 /*0:MSI, 1:MESI, 2:Dragon*/
+	int protocol   = atoi(argv[5]);	 /*0:MSI, 1:MESI, 2:Dragon*/
 
 	char *fname =  (char *)malloc(20);
  	fname = argv[6];
@@ -70,10 +70,8 @@ int main(int argc, char *argv[])
 		int proc = line[0] - 48; // ascii conversion
 		uchar op = (uchar)line[2];
 		string parsedAddr = currentLine.substr(4, currentLine.length());
-		// printf("%d %c %s\n", proc, op, parsedAddr.c_str());
-
 		ulong addr = strtoul(parsedAddr.c_str(), nullptr, 16); // convert string into ulong value for addr
-		cachesArray[proc]->Access(addr, op);
+		cachesArray[proc]->Access(addr, op, protocol); // call access function
 
 	}
 	fclose(pFile);
