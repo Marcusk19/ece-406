@@ -102,6 +102,7 @@ void Cache::Access(ulong addr,uchar op, int protocol)
             if(line->getFlags() == VALID){
                if(op == 'w'){
                   line->setFlags(DIRTY); // S->M
+                  memoryTransactions++;
                   busRdX++;
                }
                else line->setFlags(VALID); // S->S
@@ -136,16 +137,18 @@ void Cache::Snoop(ulong addr, uchar op, int protocol){
                }
                // S->S otherwise
             }
-            if(line->getFlags() == DIRTY){
+            else if(line->getFlags() == DIRTY){
+               writeBacks++; // dirty flag so need to do a writeback
+               memoryTransactions++; // memory transaction from writeback
                if(op == 'w'){
                   line->invalidate(); // M->I
                   invalidations++;
-                  memoryTransactions++;
+                  flushes++;
                }
                else {
                   line->setFlags(VALID); // M->S
                   flushes++;
-                  interventions++;
+                  interventions++; // intervention from moving to shared state
                }
             }
          }
@@ -223,6 +226,7 @@ cacheLine *Cache::fillLine(ulong addr)
    assert(victim != 0);
    if(victim->getFlags() == DIRTY){
        writeBack(addr); // function increments writeBacks counter
+       memoryTransactions++; // memory transaction as part of writeback
    }
        
    tag = calcTag(addr);   
