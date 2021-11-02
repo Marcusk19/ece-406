@@ -85,14 +85,14 @@ void Cache::Access(ulong addr,uchar op, int protocol)
             // miss
             memoryTransactions++;
             if(op == 'w'){
-               writeMisses++; // BusRdX happens here
+               writeMisses++;
             }
             else readMisses++;
 
             cacheLine *newline = fillLine(addr);
             if(op == 'w'){
                newline->setFlags(DIRTY); // I->M
-               busRdX++;
+               busRdX++; // read with intention to write
             }
             else newline->setFlags(VALID); // I->S
          }
@@ -102,6 +102,7 @@ void Cache::Access(ulong addr,uchar op, int protocol)
             if(line->getFlags() == VALID){
                if(op == 'w'){
                   line->setFlags(DIRTY); // S->M
+                  busRdX++;
                }
                else line->setFlags(VALID); // S->S
             }
@@ -144,6 +145,7 @@ void Cache::Snoop(ulong addr, uchar op, int protocol){
                else {
                   line->setFlags(VALID); // M->S
                   flushes++;
+                  interventions++;
                }
             }
          }
@@ -220,8 +222,7 @@ cacheLine *Cache::fillLine(ulong addr)
    cacheLine *victim = findLineToReplace(addr);
    assert(victim != 0);
    if(victim->getFlags() == DIRTY){
-       writeBack(addr);
-       writeBacks++;
+       writeBack(addr); // function increments writeBacks counter
    }
        
    tag = calcTag(addr);   
