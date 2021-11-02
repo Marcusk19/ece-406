@@ -12,6 +12,9 @@ typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 
+#define MSI 0
+#define MESI 1
+
 /****add new states, based on the protocol****/
 enum{
 	INVALID = 0,
@@ -48,8 +51,10 @@ protected:
    ulong reads,readMisses,writes,writeMisses,writeBacks;
 
    //******///
+
    //add coherence counters here///
    //******///
+   ulong busRdX, invalidations, c2cTransfers, flushes, interventions, memoryTransactions;
    // ulong dirtyBlocks, c2cTransfers, memoryTransactions, interventions,
    //       invalidations, flushes, busRdX;
 
@@ -81,6 +86,7 @@ public:
    //******///
    //add other functions to handle bus transactions///
    //******///
+   void Snoop(ulong, uchar, int);
 
 };
 

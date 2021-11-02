@@ -24,7 +24,7 @@ Cache::Cache(int s,int a,int b )
    //*******************//
    //initialize your counters here//
    //*******************//
-
+   busRdX = invalidations = c2cTransfers = flushes = interventions = memoryTransactions = 0;
  
    tagMask =0;
    for(i=0;i<log2Sets;i++)
@@ -51,25 +51,106 @@ void Cache::Access(ulong addr,uchar op, int protocol)
 {
    currentCycle++;/*per cache global counter to maintain LRU order 
          among cache ways, updated on every cache access*/
-           
-   if(op == 'w') writes++;
-   else          reads++;
    
-   cacheLine * line = findLine(addr);
-   if(line == NULL)/*miss*/
-   {
-      if(op == 'w') writeMisses++;
-      else readMisses++;
+   // if(op == 'w') writes++;
+   // else          reads++;
+   
+   // cacheLine * line = findLine(addr);
+   // if(line == NULL)/*miss*/
+   // {
+   //    if(op == 'w'){
+   //       writeMisses++;
+   //       busRdX++;
+   //    }
+   //    else readMisses++;
 
-      cacheLine *newline = fillLine(addr);
-         if(op == 'w') newline->setFlags(DIRTY);    
+   //    cacheLine *newline = fillLine(addr);
+   //       if(op == 'w') newline->setFlags(DIRTY);    
       
+   // }
+   // else
+   // {
+   //    /**since it's a hit, update LRU and update dirty flag**/
+   //    updateLRU(line);
+   //    if(op == 'w') line->setFlags(DIRTY);
+   // }
+   cacheLine *line;
+   switch(protocol){
+      case MSI:
+         if(op == 'w') writes++;
+         else reads++;
+
+         line = findLine(addr);
+         if(line == NULL){
+            // miss
+            memoryTransactions++;
+            if(op == 'w'){
+               writeMisses++; // BusRdX happens here
+            }
+            else readMisses++;
+
+            cacheLine *newline = fillLine(addr);
+            if(op == 'w'){
+               newline->setFlags(DIRTY); // I->M
+               busRdX++;
+            }
+            else newline->setFlags(VALID); // I->S
+         }
+         else{
+            // hit, update LRU and update dirty flag
+            updateLRU(line);
+            if(line->getFlags() == VALID){
+               if(op == 'w'){
+                  line->setFlags(DIRTY); // S->M
+               }
+               else line->setFlags(VALID); // S->S
+            }
+            else if(line->getFlags() == DIRTY){
+               line->setFlags(DIRTY); // M->M
+            }
+         }
+      break;
+      //================== MESI =======================
+      case MESI:
+      // printf("MESI\n");
+      break;
    }
-   else
-   {
-      /**since it's a hit, update LRU and update dirty flag**/
-      updateLRU(line);
-      if(op == 'w') line->setFlags(DIRTY);
+}
+
+void Cache::Snoop(ulong addr, uchar op, int protocol){
+   
+   cacheLine* line;
+
+   switch (protocol){
+      case MSI:
+         line = findLine(addr);
+         if(line != NULL){
+            // hit (not invalid state)
+            // updateLRU(line);
+
+            if(line->getFlags() == VALID){
+               if(op == 'w'){
+                  line->invalidate(); // S->I
+                  invalidations++;
+               }
+               // S->S otherwise
+            }
+            if(line->getFlags() == DIRTY){
+               if(op == 'w'){
+                  line->invalidate(); // M->I
+                  invalidations++;
+                  memoryTransactions++;
+               }
+               else {
+                  line->setFlags(VALID); // M->S
+                  flushes++;
+               }
+            }
+         }
+      break;
+
+      case MESI:
+      break;
    }
 }
 
@@ -112,7 +193,7 @@ cacheLine * Cache::getLRU(ulong addr)
    for(j=0;j<assoc;j++)
    {
       if(cache[i][j].isValid() == 0) return &(cache[i][j]);     
-   }   
+   }  
    for(j=0;j<assoc;j++)
    {
     if(cache[i][j].getSeq() <= min) { victim = j; min = cache[i][j].getSeq();}
@@ -138,7 +219,10 @@ cacheLine *Cache::fillLine(ulong addr)
   
    cacheLine *victim = findLineToReplace(addr);
    assert(victim != 0);
-   if(victim->getFlags() == DIRTY) writeBack(addr);
+   if(victim->getFlags() == DIRTY){
+       writeBack(addr);
+       writeBacks++;
+   }
        
    tag = calcTag(addr);   
    victim->setTag(tag);
@@ -151,17 +235,18 @@ cacheLine *Cache::fillLine(ulong addr)
 
 void Cache::printStats()
 { 
-   printf("01. number of reads:           %ld\n", reads);
-   printf("02. number of read misses:     %ld\n", readMisses);
-   printf("03. number of writes:          %ld\n", writes);
-   printf("04. number of write misses:    %ld\n", writeMisses);
-   // printf("05. total miss rate:           %f\n", (double)((writeMisses + readMisses)/(reads + writes) * 100));
-   printf("06. number of writebacks:      %ld\n", writeBacks);
-   printf("07. number of cache-to-cache transfers: \n");
-   printf("08. number of memory transactions:\n");
-   printf("09. number of interventions: \n");
-   printf("10. number of invalidations: \n");
-   printf("11. number of flushes: \n");
-   printf("12. number of BusRdX\n");
+   double missRate = ((double)writeMisses + (double)readMisses) / ((double)reads + (double)writes) * 100;
+   printf("01. number of reads:                    %ld\n", reads);
+   printf("02. number of read misses:              %ld\n", readMisses);
+   printf("03. number of writes:                   %ld\n", writes);
+   printf("04. number of write misses:             %ld\n", writeMisses);
+   printf("05. total miss rate:                    %.2f%%\n", missRate);
+   printf("06. number of writebacks:               %ld\n", writeBacks);
+   printf("07. number of cache-to-cache transfers: %ld\n", c2cTransfers);
+   printf("08. number of memory transactions:      %ld\n", memoryTransactions);
+   printf("09. number of interventions:            %ld\n", interventions);
+   printf("10. number of invalidations:            %ld\n", invalidations);
+   printf("11. number of flushes:                  %ld\n", flushes);
+   printf("12. number of BusRdX:                   %ld\n", busRdX);
    /****follow the ouput file format**************/
 }

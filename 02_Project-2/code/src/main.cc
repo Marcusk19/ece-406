@@ -43,6 +43,8 @@ int main(int argc, char *argv[])
 	printf("L1_ASSOC: %d\n", cache_assoc);
 	printf("L1_BLOCKSIZE: %d\n", blk_size);
 	printf("NUMBER OF PROCESSORS: %d\n", num_processors);
+	if(protocol == MSI) printf("COHERENCE PROTOCOL: MSI\n");
+	else printf("COHERENCEPROTOCOL: MESI\n");
 	printf("TRACE FILE: %s\n", fname);
  
 	//*********************************************//
@@ -72,6 +74,11 @@ int main(int argc, char *argv[])
 		string parsedAddr = currentLine.substr(4, currentLine.length());
 		ulong addr = strtoul(parsedAddr.c_str(), nullptr, 16); // convert string into ulong value for addr
 		cachesArray[proc]->Access(addr, op, protocol); // call access function
+		// snoop all other caches
+		for(int i = 0; i < num_processors; i++){
+			if(i != proc) cachesArray[i]->Snoop(addr, op, protocol);
+		}
+
 
 	}
 	fclose(pFile);
