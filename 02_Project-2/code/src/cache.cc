@@ -186,9 +186,12 @@ void Cache::Snoop(ulong addr, uchar op, int protocol){
                   line->setFlags(VALID); // E->S
                   line->setCopyFlag(true);
                   interventions++;
+                  c2cTransfers++;
                }
             }
             else if(line->getFlags() == DIRTY){
+               writebacks++;
+               // memoryTransactions++;
                if(op == 'w'){
                   line->invalidate(); // M->I
                   invalidations++;
