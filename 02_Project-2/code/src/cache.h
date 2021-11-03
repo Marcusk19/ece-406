@@ -20,9 +20,8 @@ enum{
 	INVALID = 0,
 	VALID,
 	DIRTY,
-   // added modified and shared for MSI
-   MODIFIED,
-   SHARED
+   // added exclusive for MESI
+   EXCLUSIVE
 };
 
 class cacheLine 
@@ -31,9 +30,10 @@ protected:
    ulong tag;
    ulong Flags;   // 0:invalid, 1:valid, 2:dirty 
    ulong seq; 
+   bool C; // flag for MESI
  
 public:
-   cacheLine()            { tag = 0; Flags = 0; }
+   cacheLine()            { tag = 0; Flags = 0; C = false;}
    ulong getTag()         { return tag; }
    ulong getFlags()			{ return Flags;}
    ulong getSeq()         { return seq; }
@@ -42,6 +42,9 @@ public:
    void setTag(ulong a)   { tag = a; }
    void invalidate()      { tag = 0; Flags = INVALID; }//useful function
    bool isValid()         { return ((Flags) != INVALID); }
+
+   bool copyExists() { return C;} // for MESI
+   void setCopyFlag(bool set){ C = set; }
 };
 
 class Cache

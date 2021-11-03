@@ -92,13 +92,48 @@ void Cache::Access(ulong addr,uchar op, int protocol)
       break;
       //================== MESI =======================
       case MESI:
-      // printf("MESI\n");
+         if(op == 'w') writes++;
+         else reads++;
+
+         line = findLine(addr);
+         if(line == NULL){
+            // miss
+            memoryTransactions++;
+            if(op == 'w') writeMisses++;
+            else readMisses++;
+
+            cacheLine *newLine = fillLine(addr);
+            if(op == 'w'){
+               newLine->setFlags(DIRTY); // I->M
+               busRdX++;
+            }
+            else if(op == 'r' && newLine->copyExists()) newLine->setFlags(VALID); // I->S
+            else if(op == 'r' && !(newLine->copyExists())) newLine->setFlags(EXCLUSIVE); // I->E
+
+         }
+         else {
+            // hit, update LRU
+            updateLRU(line);
+            if(line->getFlags() == EXCLUSIVE){
+               if(op == 'w'){
+                  line->setFlags(DIRTY); // E->M
+                  line->setCopyFlag(true);
+               }
+            }
+            if(line->getFlags() == VALID){
+               if(op == 'w'){
+                  line->setFlags(DIRTY); // S->M
+                  line->setCopyFlag(true);
+               }
+            }
+            // by default M->M
+         }
       break;
    }
 }
 
 void Cache::Snoop(ulong addr, uchar op, int protocol){
-   
+
    cacheLine* line;
 
    switch (protocol){
@@ -133,6 +168,40 @@ void Cache::Snoop(ulong addr, uchar op, int protocol){
       break;
 
       case MESI:
+         line = findLine(addr);
+         if(line !=  NULL){
+            // line exists in cache
+            if(line->getFlags() == VALID){
+               if(op == 'w'){
+                  line->invalidate(); // S->I
+                  invalidations++;
+               } // otherwise S->S
+            }
+            else if(line->getFlags() == EXCLUSIVE){
+               if(op == 'w'){
+                  line->invalidate(); // E->I
+                  invalidations++;
+               }
+               else{
+                  line->setFlags(VALID); // E->S
+                  line->setCopyFlag(true);
+                  interventions++;
+               }
+            }
+            else if(line->getFlags() == DIRTY){
+               if(op == 'w'){
+                  line->invalidate(); // M->I
+                  invalidations++;
+                  flushes++;
+               }
+               else{
+                  line->setFlags(VALID); // M->S
+                  flushes++;
+                  interventions++;
+               }
+            }
+            // otherwise I->I
+         }
       break;
    }
 }
