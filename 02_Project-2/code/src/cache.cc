@@ -107,7 +107,7 @@ void Cache::Access(ulong addr,uchar op, int protocol, Cache *cachesArray[], int 
             if(op == 'w'){
                newLine->setFlags(DIRTY); // I->M
                busRdX++;
-               if(isCopy(addr, cachesArray, num_processors, proc)) c2cTransfers++;
+               if(isCopy(addr, cachesArray, num_processors, proc)) c2cTransfers++; // fetch from cache
             }
             else if(isCopy(addr, cachesArray, num_processors, proc)){
                newLine->setFlags(VALID); // I->S

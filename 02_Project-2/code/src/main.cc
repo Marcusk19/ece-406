@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
 {
 	printf("===== 506 Personal information =====\n");
 	printf("Marcus Kok\n");
-	printf("ECE 406 Students? YES\n");
 	printf("mskok\n");
+	printf("undergrad section? YES\n");
 	ifstream fin;
 	FILE * pFile;
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	printf("L1_BLOCKSIZE: %d\n", blk_size);
 	printf("NUMBER OF PROCESSORS: %d\n", num_processors);
 	if(protocol == MSI) printf("COHERENCE PROTOCOL: MSI\n");
-	else printf("COHERENCEPROTOCOL: MESI\n");
+	else printf("COHERENCE PROTOCOL: MESI\n");
 	printf("TRACE FILE: %s\n", fname);
  
 	//*********************************************//
