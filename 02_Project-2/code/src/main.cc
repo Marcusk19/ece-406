@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 		uchar op = (uchar)line[2];
 		string parsedAddr = currentLine.substr(4, currentLine.length());
 		ulong addr = strtoul(parsedAddr.c_str(), nullptr, 16); // convert string into ulong value for addr
-		cachesArray[proc]->Access(addr, op, protocol); // call access function
+		cachesArray[proc]->Access(addr, op, protocol, cachesArray, num_processors, proc); // call access function
 		// snoop all other caches
 		for(int i = 0; i < num_processors; i++){
 			if(i != proc) cachesArray[i]->Snoop(addr, op, protocol);

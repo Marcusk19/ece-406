@@ -47,7 +47,9 @@ Cache::Cache(int s,int a,int b )
 /**you might add other parameters to Access()
 since this function is an entry point 
 to the memory hierarchy (i.e. caches)**/
-void Cache::Access(ulong addr,uchar op, int protocol)
+
+// TODO: pass parameter of cache array for a copy detecting function
+void Cache::Access(ulong addr,uchar op, int protocol, Cache *cachesArray[], int num_processors, int proc)
 {
    currentCycle++;/*per cache global counter to maintain LRU order 
          among cache ways, updated on every cache access*/
@@ -97,8 +99,7 @@ void Cache::Access(ulong addr,uchar op, int protocol)
 
          line = findLine(addr);
          if(line == NULL){
-            // miss
-            memoryTransactions++;
+            // miss (invalid state)
             if(op == 'w') writeMisses++;
             else readMisses++;
 
@@ -106,25 +107,35 @@ void Cache::Access(ulong addr,uchar op, int protocol)
             if(op == 'w'){
                newLine->setFlags(DIRTY); // I->M
                busRdX++;
+               if(isCopy(addr, cachesArray, num_processors, proc)) c2cTransfers++;
             }
-            else if(op == 'r' && newLine->copyExists()) newLine->setFlags(VALID); // I->S
-            else if(op == 'r' && !(newLine->copyExists())) newLine->setFlags(EXCLUSIVE); // I->E
+            else if(isCopy(addr, cachesArray, num_processors, proc)){
+               newLine->setFlags(VALID); // I->S
+               c2cTransfers++;
+            }
+            else{
+               newLine->setFlags(EXCLUSIVE); // I->E
+               memoryTransactions++;
+            }
 
          }
          else {
             // hit, update LRU
             updateLRU(line);
-            if(line->getFlags() == EXCLUSIVE){
-               if(op == 'w'){
-                  line->setFlags(DIRTY); // E->M
-                  line->setCopyFlag(true);
-               }
-            }
-            if(line->getFlags() == VALID){
-               if(op == 'w'){
-                  line->setFlags(DIRTY); // S->M
-                  line->setCopyFlag(true);
-               }
+            switch(line->getFlags()){
+               case EXCLUSIVE:
+                  if(op == 'w'){
+                     line->setFlags(DIRTY); // E->M
+                     line->setCopyFlag(true);
+                  }
+               break;
+
+               case VALID:
+                  if(op == 'w'){
+                     line->setFlags(DIRTY); // S->M
+                     line->setCopyFlag(true);
+                  }
+               break;
             }
             // by default M->M
          }
@@ -166,47 +177,59 @@ void Cache::Snoop(ulong addr, uchar op, int protocol){
             }
          }
       break;
-
+// ============== MESI SNOOP =================
       case MESI:
          line = findLine(addr);
          if(line !=  NULL){
             // line exists in cache
-            if(line->getFlags() == VALID){
-               if(op == 'w'){
-                  line->invalidate(); // S->I
-                  invalidations++;
-               } // otherwise S->S
+            line->setCopyFlag(true);
+            switch(line->getFlags()){
+               case VALID:
+                  if(op == 'w'){
+                     line->invalidate(); // S->I
+                     invalidations++;
+                  }
+               break;
+
+               case DIRTY:
+                  writeBacks++; // dirty flag so need to do a writeback
+                  memoryTransactions++; // memory transaction from writeback
+                  if(op == 'w'){
+                     line->invalidate(); // M->I
+                     invalidations++;
+                     flushes++;
+                  }
+                  else {
+                     line->setFlags(VALID); // M->S
+                     flushes++;
+                     interventions++; // intervention from moving to shared state
+                  }
+               break;
+
+               case EXCLUSIVE:
+                  if(op == 'w'){
+                     line->invalidate(); // E->I
+                     invalidations++;
+
+                  }
+                  else{
+                     line->setFlags(VALID); // E->S
+                     interventions++;
+                  }
+               break;
             }
-            else if(line->getFlags() == EXCLUSIVE){
-               if(op == 'w'){
-                  line->invalidate(); // E->I
-                  invalidations++;
-               }
-               else{
-                  line->setFlags(VALID); // E->S
-                  line->setCopyFlag(true);
-                  interventions++;
-                  c2cTransfers++;
-               }
-            }
-            else if(line->getFlags() == DIRTY){
-               writebacks++;
-               // memoryTransactions++;
-               if(op == 'w'){
-                  line->invalidate(); // M->I
-                  invalidations++;
-                  flushes++;
-               }
-               else{
-                  line->setFlags(VALID); // M->S
-                  flushes++;
-                  interventions++;
-               }
-            }
-            // otherwise I->I
          }
       break;
    }
+}
+
+// function to check for copies
+bool Cache::isCopy(ulong addr, Cache **cachesArray, int len, int proc){
+   for(int i = 0; i < len; i++){
+      cacheLine *line = cachesArray[i]->findLine(addr);
+      if(line != NULL && i != proc) return true;
+   }
+   return false;
 }
 
 /*look up line*/

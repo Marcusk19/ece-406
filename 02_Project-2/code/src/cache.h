@@ -82,7 +82,7 @@ public:
    ulong getWB(){return writeBacks;}
    
    void writeBack(ulong)   {writeBacks++;}
-   void Access(ulong,uchar,int);
+   void Access(ulong,uchar,int, Cache**, int, int);
    void printStats();
    void updateLRU(cacheLine *);
 
@@ -90,6 +90,7 @@ public:
    //add other functions to handle bus transactions///
    //******///
    void Snoop(ulong, uchar, int);
+   bool isCopy(ulong, Cache**, int, int);
 
 };
 
